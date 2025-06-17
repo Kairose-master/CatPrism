@@ -1,0 +1,29 @@
+body {
+  font-family: sans-serif;
+}
+#viz svg {
+  border: 1px solid #ccc;
+  width: 100%;
+  height: 600px;
+}
+.object {
+  fill: #eef;
+  stroke: #333;
+}
+.morphism {
+  stroke: #333;
+  fill: none;
+}
+.functor {
+  stroke: #ff7f0e;
+  fill: none;
+  stroke-dasharray: 5 5;
+}
+.functor-label {
+  font-size: 10px;
+  fill: #ff7f0e;
+}
+.category-label {
+  font-size: 16px;
+  font-weight: bold;
+}

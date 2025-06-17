@@ -1,0 +1,42 @@
+{
+  "categories": [
+    {
+      "name": "CategoryA",
+      "objects": ["Vec2", "Mat2"],
+      "morphisms": [
+        { "name": "scale", "from": "Vec2", "to": "Vec2" },
+        { "name": "rotate", "from": "Vec2", "to": "Vec2" },
+        { "name": "multiply", "from": "Mat2", "to": "Vec2" }
+      ]
+    },
+    {
+      "name": "CategoryB",
+      "objects": ["DisplayVec", "RenderMat"],
+      "morphisms": [
+        { "name": "scaleOut", "from": "DisplayVec", "to": "DisplayVec" },
+        { "name": "rotateOut", "from": "DisplayVec", "to": "DisplayVec" },
+        { "name": "projectOut", "from": "RenderMat", "to": "DisplayVec" }
+      ]
+    }
+  ],
+  "metric": {
+    "name": "PhaseDist",
+    "lambda": "abs(phase(f) - phase(g))"
+  },
+  "functor": {
+    "name": "F",
+    "from": "CategoryA",
+    "to": "CategoryB",
+    "object_map": {
+      "Vec2": "DisplayVec",
+      "Mat2": "RenderMat"
+    },
+    "morphism_map": {
+      "scale": "scaleOut",
+      "rotate": "rotateOut",
+      "multiply": "projectOut"
+    },
+    "epsilon": 0.15,
+    "rule": "preserve_composition_within ε"
+  }
+}
