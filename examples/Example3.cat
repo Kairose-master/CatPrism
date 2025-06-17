@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------
+#  Example3.cat  —  classical forgetful functor
+# ---------------------------------------------------------------
+
+category Groups {
+  object G
+  object H
+
+  morphism f : G -> H     # group homomorphism
+  morphism g : H -> G
+}
+
+category Sets {
+  object UG      # underlying set of G
+  object UH      # underlying set of H
+
+  morphism fset : UG -> UH
+  morphism gset : UH -> UG
+}
+
+metric Δzero { lambda (f,g) => 0 }   # zero‐distance metric
+
+functor U from Groups to Sets {
+  object_map   { G -> UG,  H -> UH }
+  morphism_map { f -> fset, g -> gset }
+
+  epsilon           : 0          # exact preservation
+  distortion_metric : Δzero
+  rule              : preserve_composition_within ε
+}
+

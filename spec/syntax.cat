@@ -1,0 +1,33 @@
+category CategoryA {
+  object Vec2
+  object Mat2
+
+  morphism scale: Vec2 -> Vec2
+  morphism rotate: Vec2 -> Vec2
+  morphism multiply: Mat2 -> Vec2
+}
+
+category CategoryB {
+  object DisplayVec
+  object RenderMat
+
+  morphism scaleOut: DisplayVec -> DisplayVec
+  morphism rotateOut: DisplayVec -> DisplayVec
+  morphism projectOut: RenderMat -> DisplayVec
+}
+
+functor F from CategoryA to CategoryB {
+  object_map {
+    Vec2 -> DisplayVec
+    Mat2 -> RenderMat
+  }
+
+  morphism_map {
+    scale -> scaleOut
+    rotate -> rotateOut
+    multiply -> projectOut
+  }
+
+  rule: preserve_composition
+}
+

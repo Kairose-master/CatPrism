@@ -1,0 +1,47 @@
+# -----------------------------------------------------------------------------
+#  Projection1.cat  — minimal working example (ε-tolerant functor)
+#  Vec2 / Mat2  →  DisplayVec / RenderMat
+# -----------------------------------------------------------------------------
+
+# ----- Source category -------------------------------------------------------
+category CategoryA {
+  object Vec2
+  object Mat2
+
+  morphism scale   : Vec2 -> Vec2   # λv. k·v
+  morphism rotate  : Vec2 -> Vec2   # λv. Rθ·v
+  morphism multiply: Mat2 -> Vec2   # λM. M·e₁
+}
+
+# ----- Target category -------------------------------------------------------
+category CategoryB {
+  object DisplayVec
+  object RenderMat
+
+  morphism scaleOut   : DisplayVec -> DisplayVec
+  morphism rotateOut  : DisplayVec -> DisplayVec
+  morphism projectOut : RenderMat  -> DisplayVec
+}
+
+# ----- Distortion metric (Phase distance) ------------------------------------
+metric PhaseDist {
+  lambda (f,g) => abs(phase(f) - phase(g))    # |θ₁ - θ₂|
+}
+
+# ----- Functor with ε-tolerance ----------------------------------------------
+functor F from CategoryA to CategoryB {
+  object_map {
+    Vec2 -> DisplayVec
+    Mat2 -> RenderMat
+  }
+
+  morphism_map {
+    scale    -> scaleOut
+    rotate   -> rotateOut
+    multiply -> projectOut
+  }
+
+  epsilon            : 0.15
+  distortion_metric  : PhaseDist
+  rule               : preserve_composition_within ε
+}

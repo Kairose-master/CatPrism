@@ -1,0 +1,52 @@
+name: CatPrism Lean CI
+
+on:
+  push:
+    paths:
+      - 'examples/**/*.cat'
+      - 'parser/**'
+      - 'core/lean/**'
+      - '.github/workflows/lean-ci.yml'
+  pull_request:
+    paths:
+      - 'examples/**/*.cat'
+      - 'parser/**'
+      - 'core/lean/**'
+
+jobs:
+  build-and-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: 🦀 Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: 🧱 Build CatPrism parser
+        working-directory: parser
+        run: cargo build --release
+
+      - name: 🔄 Convert .cat to Lean
+        run: |
+          mkdir -p core/lean/AutoGen
+          for file in examples/*.cat; do
+            ./parser/target/release/catprism export-lean "$file" --out core/lean/AutoGen
+          done
+
+      - name: 🧠 Setup Lean toolchain
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: 🧪 Run Lean proof build
+        working-directory: core/lean
+        run: lake build
+
+      - name: ✅ Done
+        run: echo "Lean proofs passed!"

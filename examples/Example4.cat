@@ -1,0 +1,58 @@
+# ---------------------------------------------------------------
+#  Example4.cat  —  dual functors with two different metrics
+# ---------------------------------------------------------------
+
+category Shape {
+  object Circle
+  object Square
+
+  morphism rotate45 : Circle -> Circle
+  morphism scale1_5 : Square -> Square
+  morphism embed    : Square -> Circle   # inscribed square → circle
+}
+
+category Display {
+  object DCircle
+  object DSquare
+
+  morphism r45_out  : DCircle -> DCircle
+  morphism s1_5_out : DSquare -> DSquare
+  morphism proj_out : DSquare -> DCircle
+}
+
+# ----- metrics --------------------------------------------------------------
+metric PhaseDist {
+  lambda (f,g) => abs(phase(f) - phase(g))
+}
+
+metric LengthDist {
+  lambda (f,g) => abs(len(f) - len(g))
+}
+
+# ----- functor Fθ : PhaseDist / ε = 0.20 -----------------------------------
+functor Ftheta from Shape to Display {
+  object_map {
+    Circle -> DCircle
+    Square -> DSquare
+  }
+
+  morphism_map {
+    rotate45 -> r45_out
+    scale1_5 -> s1_5_out
+    embed    -> proj_out
+  }
+
+  epsilon           : 0.20
+  distortion_metric : PhaseDist
+  rule              : preserve_composition_within ε
+}
+
+# ----- functor Flen : LengthDist / ε = 0.50 --------------------------------
+functor Flen from Shape to Display {
+  object_map   { Circle -> DCircle, Square -> DSquare }
+  morphism_map { rotate45 -> r45_out, scale1_5 -> s1_5_out, embed -> proj_out }
+
+  epsilon           : 0.50
+  distortion_metric : LengthDist
+  rule              : preserve_composition_within ε
+}

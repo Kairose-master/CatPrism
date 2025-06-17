@@ -1,0 +1,36 @@
+# ---------------------------------------------------------------
+#  Example2.cat  —  n = 2 matrix category  ⟶  phase space
+# ---------------------------------------------------------------
+
+category Mat2 {
+  object Unit                                  # single object
+
+  morphism rot90  : Unit -> Unit               # 90° rotation matrix
+  morphism scale2 : Unit -> Unit               # scalar 2·I
+  morphism anyM   : Unit -> Unit               # arbitrary 2×2 matrix
+}
+
+category Phase {
+  object PhaseUnit
+  morphism add90  : PhaseUnit -> PhaseUnit     # add π/2
+  morphism addPhi : PhaseUnit -> PhaseUnit     # add φ (arbitrary)
+}
+
+metric PhaseDist {
+  lambda (f,g) => abs(phase(f) - phase(g))
+}
+
+functor Fmat from Mat2 to Phase {
+  object_map { Unit -> PhaseUnit }
+
+  morphism_map {
+    rot90  -> add90
+    scale2 -> addPhi      # det > 0 ⇒ phase 0
+    anyM   -> addPhi
+  }
+
+  epsilon           : 0.30
+  distortion_metric : PhaseDist
+  rule              : preserve_composition_within ε
+}
+
