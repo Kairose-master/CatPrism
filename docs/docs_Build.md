@@ -30,7 +30,7 @@ cargo build --release
 
 ### 3. `.cat` → Lean 변환
 ```bash
-./target/release/catprism export-lean examples/Projection1.cat
+./target/release/catprism export-lean --input examples/Projection1.cat
 ```
 
 ### 4. Lean 증명 빌드

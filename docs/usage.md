@@ -46,7 +46,7 @@ cargo build --release
 ## 4 · `.cat` → Lean (proof export)
 
 ```bash
-./target/release/catprism export-lean ../examples/Projection1.cat
+./target/release/catprism export-lean --input ../examples/Projection1.cat
 # → core/lean/AutoGen/Projection1.lean
 ```
 
@@ -90,7 +90,7 @@ python -m http.server 9000
 ```bash
 # 1. place MyFunctor.cat under examples/
 catprism parse --json examples/MyFunctor.cat
-catprism export-lean examples/MyFunctor.cat
+catprism export-lean --input examples/MyFunctor.cat
 cd core/lean && lake build
 ```
 
@@ -101,7 +101,7 @@ cd core/lean && lake build
 | 목적             | 명령                                           |
 | -------------- | -------------------------------------------- |
 | JSON AST       | `catprism parse --json foo.cat`              |
-| Lean export    | `catprism export-lean foo.cat`               |
+| Lean export    | `catprism export-lean --input foo.cat`       |
 | Build proofs   | `lake build` (in `core/lean`)                |
 | Local web demo | `python -m http.server 9000` (in `renderer`) |
 
