@@ -16,3 +16,7 @@ thiserror = "1.0"
 [features]
 default = []
 
+[[bin]]
+name = "catprism"
+path = "src/main.rs"
+
