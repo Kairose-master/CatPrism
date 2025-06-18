@@ -24,8 +24,39 @@ pub fn parse_cat_file(path: &str) -> CatPrismAST {
 
     let mut current_cat: Option<Category> = None;
 
+    let mut in_obj_map = false;
+    let mut in_morph_map = false;
+
     for line in content.lines() {
-        let trimmed = line.trim();
+        let trimmed = line.split('#').next().unwrap().trim();
+
+        if in_obj_map {
+            if trimmed.starts_with('}') {
+                in_obj_map = false;
+                continue;
+            }
+            if trimmed.contains("->") {
+                let parts: Vec<&str> = trimmed.split("->").map(|s| s.trim()).collect();
+                if parts.len() == 2 {
+                    functor.object_map.insert(parts[0].to_string(), parts[1].to_string());
+                }
+            }
+            continue;
+        }
+
+        if in_morph_map {
+            if trimmed.starts_with('}') {
+                in_morph_map = false;
+                continue;
+            }
+            if trimmed.contains("->") {
+                let parts: Vec<&str> = trimmed.split("->").map(|s| s.trim()).collect();
+                if parts.len() == 2 {
+                    functor.morphism_map.insert(parts[0].to_string(), parts[1].to_string());
+                }
+            }
+            continue;
+        }
 
         if trimmed.starts_with("category") {
             if let Some(cat) = current_cat.take() {
@@ -42,7 +73,7 @@ pub fn parse_cat_file(path: &str) -> CatPrismAST {
                 let obj = trimmed.split_whitespace().nth(1).unwrap().to_string();
                 cat.objects.push(obj);
             }
-        } else if trimmed.starts_with("morphism") {
+        } else if trimmed.starts_with("morphism ") {
             if let Some(cat) = current_cat.as_mut() {
                 let parts: Vec<&str> = trimmed.split(':').collect();
                 let name = parts[0]
@@ -73,16 +104,41 @@ pub fn parse_cat_file(path: &str) -> CatPrismAST {
             functor.name = parts[1].to_string();
             functor.from = parts[3].to_string();
             functor.to = parts[5].to_string();
-        } else if trimmed.starts_with("object_map") || trimmed.starts_with("object_map {") {
-            continue;
-        } else if trimmed.contains("->") && trimmed.contains(',') == false {
-            let parts: Vec<&str> = trimmed.split("->").map(|s| s.trim()).collect();
-            if parts.len() == 2 {
-                if trimmed.contains("object") || trimmed.contains("}") {
-                    continue;
+        } else if trimmed.starts_with("object_map") {
+            // handle inline mappings if present
+            if let Some(rest) = trimmed.splitn(2, '{').nth(1) {
+                let inner = rest.trim_end_matches('}').trim();
+                for entry in inner.split(',') {
+                    let e = entry.trim();
+                    if e.is_empty() { continue; }
+                    if let Some((a, b)) = e.split_once("->") {
+                        functor.object_map.insert(a.trim().to_string(), b.trim().to_string());
+                    }
                 }
-                functor.object_map.insert(parts[0].to_string(), parts[1].to_string());
+                if !rest.contains('}') {
+                    in_obj_map = true;
+                }
+            } else {
+                in_obj_map = true;
             }
+            continue;
+        } else if trimmed.starts_with("morphism_map") {
+            if let Some(rest) = trimmed.splitn(2, '{').nth(1) {
+                let inner = rest.trim_end_matches('}').trim();
+                for entry in inner.split(',') {
+                    let e = entry.trim();
+                    if e.is_empty() { continue; }
+                    if let Some((a, b)) = e.split_once("->") {
+                        functor.morphism_map.insert(a.trim().to_string(), b.trim().to_string());
+                    }
+                }
+                if !rest.contains('}') {
+                    in_morph_map = true;
+                }
+            } else {
+                in_morph_map = true;
+            }
+            continue;
         } else if trimmed.contains("epsilon") {
             let eps = trimmed.split(':').nth(1).unwrap().trim().parse::<f64>().unwrap();
             functor.epsilon = eps;
