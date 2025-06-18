@@ -16,10 +16,3 @@ thiserror = "1.0"
 [features]
 default = []
 
-[workspace]
-members = [
-    "catprism-core",
-    "catprism-parser",
-    "catprism-cli"
-]
-

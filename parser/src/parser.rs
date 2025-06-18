@@ -45,13 +45,22 @@ pub fn parse_cat_file(path: &str) -> CatPrismAST {
         } else if trimmed.starts_with("morphism") {
             if let Some(cat) = current_cat.as_mut() {
                 let parts: Vec<&str> = trimmed.split(':').collect();
-                let name = parts[0].split_whitespace().nth(1).unwrap().trim().to_string();
-                let (from, to) = parts[1].split("->").map(|s| s.trim()).collect::<Vec<_>>()[..] else { panic!("Invalid morphism") };
-                cat.morphisms.push(Morphism {
-                    name,
-                    from: from.to_string(),
-                    to: to.to_string(),
-                });
+                let name = parts[0]
+                    .split_whitespace()
+                    .nth(1)
+                    .unwrap()
+                    .trim()
+                    .to_string();
+                let arrow_parts: Vec<&str> = parts[1].split("->").map(|s| s.trim()).collect();
+                if arrow_parts.len() == 2 {
+                    let from = arrow_parts[0];
+                    let to = arrow_parts[1];
+                    cat.morphisms.push(Morphism {
+                        name,
+                        from: from.to_string(),
+                        to: to.to_string(),
+                    });
+                }
             }
         } else if trimmed.starts_with("metric") {
             let name = trimmed.split_whitespace().nth(1).unwrap().to_string();
