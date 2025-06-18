@@ -54,7 +54,7 @@
 catprism parse --json examples/Example2.cat
 
 # Lean 변환
-catprism export-lean examples/Example2.cat
+catprism export-lean --input examples/Example2.cat
 
 # Lean 증명
 cd core/lean && lake build

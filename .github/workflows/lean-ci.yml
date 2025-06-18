@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p core/lean/AutoGen
           for file in examples/*.cat; do
-            ./parser/target/release/catprism export-lean "$file" --out core/lean/AutoGen
+            ./parser/target/release/catprism export-lean --input "$file" --out core/lean/AutoGen
           done
 
       - name: 🧠 Setup Lean toolchain

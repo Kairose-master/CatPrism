@@ -63,7 +63,7 @@ $ cargo build --release
 $ ./target/release/catprism parse --json ../examples/Projection1.cat
 
 # Lean proof export
-$ ./target/release/catprism export-lean ../examples/Projection1.cat
+$ ./target/release/catprism export-lean --input ../examples/Projection1.cat
 $ cd ../core/lean && lake build
 ```
 
@@ -83,7 +83,7 @@ $ python -m http.server 9000
 * **Example 3** — Groups → Sets (Δzero, ε = 0)  
 * **Example 4** — Shape → Display with Δθ / Δlen comparison
 
-Run `catprism export-lean examples/ExampleX.cat` then `lake build` to verify.
+Run `catprism export-lean --input examples/ExampleX.cat` then `lake build` to verify.
 
 ---
 

@@ -40,7 +40,7 @@ Run:
 
 ```bash
 catprism parse --json examples/Projection1.cat
-catprism export-lean examples/Projection1.cat
+catprism export-lean --input examples/Projection1.cat
 lake build          # inside core/lean
 ```
 
