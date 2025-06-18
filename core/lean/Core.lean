@@ -7,9 +7,10 @@
   • verify_comp default target
 -/
 
-import Mathlib.CategoryTheory.Category
-import Mathlib.CategoryTheory.Functor
-import Mathlib.LinearAlgebra.Basic
+import Mathlib.CategoryTheory.Category.Basic
+import Mathlib.CategoryTheory.Functor.Basic
+import Mathlib.Data.Real.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Topology.MetricSpace.Basic
 open CategoryTheory
 
