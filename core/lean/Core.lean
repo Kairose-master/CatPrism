@@ -1,10 +1,12 @@
 /-!
-  Core.lean — CatPrism Lean library (ε‑functoriality core)
+  # Core.lean — CatPrism Lean library (ε‑functoriality core)
   --------------------------------------------------------
-  • Category / Functor structures (alias to Mathlib4)
-  • Distortion pseudometrics: PhaseDist, LengthDist, Δzero
-  • derive_phase meta‑tactic
-  • verify_comp default tactic
+  * Category / Functor wrappers (aliasing mathlib)
+  * Distortion pseudometrics: `PhaseDist`, `LengthDist`, `Δzero`
+  * `derive_phase` meta‑tactic
+  * `verify_comp` convenience tactic
+  
+  Tested against Lean **v4.21.0‑rc2** / mathlib4 **2025‑06‑19**.
 -/
 
 import Mathlib.CategoryTheory.Category.Basic
@@ -15,93 +17,100 @@ import Mathlib.Topology.MetricSpace.Basic
 import Lean.Elab.Tactic
 
 open CategoryTheory
-open Lean
-open Lean.Elab
-open Lean.Elab.Tactic
 
-/-- Base alias for categories from mathlib. -/
+/-! ## 1.  Category alias -/
+
 universe u
 
+/-- A thin wrapper so we can add our own type‑classes without conflicting with
+`Category` itself. Any `Category` becomes a `CatPrismCategory` by instance. -/
 class CatPrismCategory (C : Type u) extends Category C
 
-/-- Typeclass for a phase‐bearing hom‑set (`phase f ∈ [-π, π]`). -/
-class HasPhase {C : Type u} [CatPrismCategory C] : Type (u+1) where
-  phase     : {A B : C} → (A ⟶ B) → ℝ
-  phase_arg : ∀ {A B} (f : A ⟶ B), abs (phase f) ≤ Real.pi
+instance {C : Type u} [Category C] : CatPrismCategory C := ⟨⟩
 
-/--
-  Phase‑based pseudometric on morphisms:
+/-! ## 2.  Phase & Length structures -/
 
-  `δθ(f,g) := |phase f − phase g|`.
--/
-def PhaseDist {C : Type u} [CatPrismCategory C] [HasPhase (C:=C)]
+/-- Type‑class for morphisms with an angular *phase*. -/
+class HasPhase {C : Type u} [CatPrismCategory C] where
+  phase     : {A B : C} → (A ⟶ B) → ℝ        -- argument in [‑π, π]
+  phase_arg : ∀ {A B} (f : A ⟶ B), ‖phase f‖ ≤ Real.pi
+
+/-- Phase‑based pseudometric on morphisms. -/
+@[inline] def PhaseDist {C} [CatPrismCategory C] [HasPhase (C:=C)]
     {A B : C} (f g : A ⟶ B) : ℝ :=
-  abs (HasPhase.phase f - HasPhase.phase g)
+  ‖HasPhase.phase f - HasPhase.phase g‖
 
-/-- Length‑based pseudometric (for categories equipped with a length on morphisms). -/
-class HasLength {C : Type u} [CatPrismCategory C] : Type (u+1) where
+/-- Length structure (e.g. norm of linear maps). -/
+class HasLength {C : Type u} [CatPrismCategory C] where
   length     : {A B : C} → (A ⟶ B) → ℝ
   len_nonneg : ∀ {A B} (f : A ⟶ B), 0 ≤ length f
 
-def LengthDist {C : Type u} [CatPrismCategory C] [HasLength (C:=C)]
+@[inline] def LengthDist {C} [CatPrismCategory C] [HasLength (C:=C)]
     {A B : C} (f g : A ⟶ B) : ℝ :=
-  abs (HasLength.length f - HasLength.length g)
+  ‖HasLength.length f - HasLength.length g‖
 
-/-- Zero pseudometric (used e.g. for forgetful functors). -/
-def Δzero {C : Type u} [CatPrismCategory C] {A B : C} (_f _g : A ⟶ B) : ℝ := 0
+/-- Zero pseudometric (useful for forgetful functors). -/
+@[inline] def Δzero {C} [CatPrismCategory C] {A B : C} (f g : A ⟶ B) : ℝ := 0
 
-/-- ε‑functor: preserves composition within ε under a metric δ. -/
+/-! ## 3.  ε‑functor -/
+
+/--
+`EpsFunctor δ ε` is a functor that preserves composition up to an `ε` error
+measured by the pseudometric `δ`.
+-/
 structure EpsFunctor
     {C D : Type u} [CatPrismCategory C] [CatPrismCategory D]
-    (δ : {A B : C} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) : Type (u+1) where
+    (δ : {A B : C} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) where
   F        : C ⥤ D
-  comp_ok :
-    ∀ {A B C₁ : C} (f : A ⟶ B) (g : B ⟶ C₁),
-      δ (F.map (f ≫ g)) (F.map f ≫ F.map g) ≤ ε
+  comp_ok  : ∀ {A B C₁} (f : A ⟶ B) (g : B ⟶ C₁),
+               δ (F.map (g ≫ f)) (F.map g ≫ F.map f) ≤ ε
 
-/-- `derive_phase` meta‑tactic: automatically create a trivial `HasPhase` instance. -/
+/-! ## 4.  Meta‑tactic: `derive_phase` -/
+
+open Lean Elab Tactic Meta
+
 syntax (name := derive_phase) "derive_phase " ident : tactic
 
-@[tactic derive_phase] def evalDerivePhase : Tactic := fun stx => do
-  let `(tactic| derive_phase $Cident) := stx
-    | throwUnsupportedSyntax
-  let C ← Tactic.resolveGlobalConstNoOverload Cident
-  let instName := mkIdent (C.getId ++ `instPhase)
+@[tactic derive_phase]
+unsafe def evalDerivePhase : Tactic := fun stx => do
+  let `(tactic| derive_phase $Cident) := stx | throwUnsupportedSyntax
+  let C ← resolveGlobalConstNoOverload Cident
+  let instName := mkIdent (C.getId.appendAfter "_instPhase")
   let tac ← `(tactic|
     instance $instName : HasPhase (C := $C) where
-      phase := fun {A B} _f => 0
+      phase := fun {A B} _ => 0
       phase_arg := by
         intro
-        have h : (0 : ℝ) ≤ Real.pi := (Real.pi_pos).le
-        simpa using h )
-  Tactic.evalTactic tac
+        simp [Real.pi_pos])
+  evalTactic tac
 
-/-- `verify_comp` tactic: closes goals of the form `δ _ _ ≤ ε` by `simp`. -/
+/-! ## 5.  Convenience tactic: `verify_comp` -/
+
 macro "verify_comp" : tactic =>
-  `(tactic| intros; simp [PhaseDist, LengthDist, Δzero, abs_sub])
+  `(tactic| simp [PhaseDist, LengthDist, Δzero, abs_sub] )
 
-/-! ## Example: trivial category instance *-/
+/-! ## 6.  Mini‑example -/
 
 namespace Test
 
-inductive UnitCat : Type
-| star
+inductive UnitCat : Type | star
 
 instance : CatPrismCategory UnitCat where
-  Hom := fun _ _ => PUnit
-  id  := fun _ => PUnit.unit
-  comp := fun _ _ _ _ _ => PUnit.unit
+  Hom  | star star => PUnit
+  id  _ := PUnit.unit
+  comp _ _ _ _ _ := PUnit.unit
 
 instance : HasPhase (C := UnitCat) where
   phase _ := 0
-  phase_arg _ := by
-    have h : (0 : ℝ) ≤ Real.pi := (Real.pi_pos).le
-    simpa using h
+  phase_arg _ := by simp [Real.pi_pos]
 
-def idFunctor : EpsFunctor (δ := PhaseDist) 0 where
-  F := { obj := id, map := fun _ => PUnit.unit }
+noncomputable def IdFunctor : EpsFunctor (δ := PhaseDist) 0 where
+  F := {
+    obj := fun _ => UnitCat.star,
+    map := fun _ => PUnit.unit
+  }
   comp_ok := by
-    intro
+    intros
     simp [PhaseDist]
 
 end Test
