@@ -8,48 +8,60 @@ open CategoryTheory
 
 universe u
 
+/-- A thin wrapper around `Category` so we can add extra structure later. -/
 class CatPrismCategory (C : Type u) extends Category C
 
+/-- Morphisms endowed with a phase (angle in ℝ). -/
 class HasPhase {C} [CatPrismCategory C] where
-  phase : {A B : C} → (A ⟶ B) → ℝ
-  phase_arg : ∀ {A B : C} (f : A ⟶ B), abs (phase f) ≤ Real.pi
+  phase     : {A B : C} → (A ⟶ B) → ℝ
+  phase_arg : ∀ {A B : C} (f : A ⟶ B), |phase f| ≤ Real.pi
 
 def PhaseDist {C} [CatPrismCategory C] [HasPhase (C := C)]
     {A B : C} (f g : A ⟶ B) : ℝ :=
-  abs (HasPhase.phase f - HasPhase.phase g)
+  |HasPhase.phase f - HasPhase.phase g|
 
+/-- Optional length structure (useful for vector-like morphisms). -/
 class HasLength {C} [CatPrismCategory C] where
-  length : {A B : C} → (A ⟶ B) → ℝ
+  length     : {A B : C} → (A ⟶ B) → ℝ
   len_nonneg : ∀ {A B : C} (f : A ⟶ B), 0 ≤ length f
 
 def LengthDist {C} [CatPrismCategory C] [HasLength (C := C)]
     {A B : C} (f g : A ⟶ B) : ℝ :=
-  abs (HasLength.length f - HasLength.length g)
+  |HasLength.length f - HasLength.length g|
 
-def Δzero {C} [CatPrismCategory C] {A B : C} (f g : A ⟶ B) : ℝ := 0
+/-- Trivial pseudometric that is constantly 0 (for forgetful functors). -/
+def Δzero {C} [CatPrismCategory C] {A B : C} (_f g : A ⟶ B) : ℝ := 0
 
+/--  
+An **ε-functor**: a functor that preserves composition _within ε_  
+under a user-supplied pseudometric `δ`.
+-/
 structure EpsFunctor
     {C D : Type u} [CatPrismCategory C] [CatPrismCategory D]
-    (dist : {A B : C} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) where
+    (δ : {A B : C} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) where
   F : C ⥤ D
   comp_ok :
     ∀ {A B C₁ : C} (f : A ⟶ B) (g : B ⟶ C₁),
-      dist (F.map (g ≫ f)) ((F.map g) ≫ (F.map f)) ≤ ε
+      δ (F.map (g ≫ f)) ((F.map g) ≫ (F.map f)) ≤ ε
+
+/-! ## Minimal working example: `UnitCat` -/
 
 inductive UnitCat
 | star
 
 instance : CatPrismCategory UnitCat where
-  Hom := fun _ _ => PUnit
-  id := fun _ => PUnit.unit
-  comp := @fun _ _ _ _ _ => PUnit.unit
+  Hom  := fun _ _ ↦ PUnit
+  id   := fun _ ↦ PUnit.unit
+  comp := fun _ _ _ _ _ ↦ PUnit.unit
 
 instance : HasPhase (C := UnitCat) where
-  phase := fun {A B} _ => 0
-  phase_arg := fun {A B} _ =>
-    abs_le.2 ⟨by simp [Real.pi_pos.le], by simp [Real.pi_pos.le]⟩
+  phase      := fun {_ _} _ ↦ 0
+  phase_arg  := by
+    intro; simp [Real.pi_pos.le]
 
-def IdFunctor : EpsFunctor (dist := PhaseDist) 0 where
-  F := { obj := id, map := fun _ => PUnit.unit }
+/-- Identity functor on `UnitCat`, trivially 0-distortion. -/
+def IdFunctor : EpsFunctor (δ := PhaseDist) 0 where
+  F := { obj := id, map := fun _ ↦ PUnit.unit }
   comp_ok := by
-    intros; simp [PhaseDist]
+    intro A B C₁ f g
+    simp [PhaseDist]
