@@ -113,3 +113,57 @@ Special thanks to the category‑theory community & the open‑source ecosystem.
 > _“도구를 쓰지 말고, 구조와 함께 걸어라.”_  
 > _— Chapter 1, forthcoming series_
 
+```markdown
+### ⚠️ Inference Collapse — Logged Error & Attempt Summary
+
+#### 🔥 Error Log (Lean 4.21.0-rc2)
+
+error: application type mismatch:
+  ?m ≫ F.map g
+expected: ?m ⟶ ?m
+
+error: Core.lean:38:37:
+  F.map g has type:
+    F.obj B ⟶ F.obj C₁ : Type ?u
+  but is expected to have type:
+    ?m f g ⟶ ?m f g : Type ?u
+
+error: Core.lean:55:27:
+  invalid argument name 'd' for function
+
+Lean exited with code 1
+
+- Lean version: leanprover/lean4 v4.21.0-rc2
+- mathlib commit: 2025-06-14
+- File: Core.lean (DSL structure: EpsFunctor)
+
+---
+
+#### 🧪 Attempted Fixes & Structural Results
+
+| Attempt                                  | Result | Note                                                  |
+|------------------------------------------|--------|--------------------------------------------------------|
+| Used `F.map f ≫ F.map g` manually         | ✅ Pass | Inference succeeds manually                           |
+| Used `F.map (g ≫ f)` inside DSL           | ❌ Fail | Metavariable collapse: `?m ≫ F.map g`                 |
+| Simplified DSL structure (`EpsFunctor`)   | ❌ Fail | Same inference failure                                |
+| Explicit Category instance annotations    | ❌ Fail | No effect — inference fails regardless                |
+| Internal metric structures (`HasPhase`)   | ✅ Pass | No issue with isolated morphism structure             |
+
+---
+
+#### 🧠 Diagnosis
+
+- Lean’s elaborator fails to resolve source/target category when `F.map (g ≫ f)` appears **inside DSL-structured contexts**.
+- Instead of resolving the morphism types, it **falls back to metavariables** and produces `application type mismatch`.
+- This is not a syntactic issue but a **structural limitation** in how Lean infers composed morphisms across DSLs.
+
+---
+
+#### 🧬 Example DSL Structure
+
+structure EpsFunctor (...) where
+  F : C ⥤ D
+  comp_ok :
+    ∀ f g, d (F.map (g ≫ f)) ((F.map f) ≫ (F.map g)) ≤ ε
+```
+
