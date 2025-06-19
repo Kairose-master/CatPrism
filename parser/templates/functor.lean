@@ -4,12 +4,12 @@
   ε-Functor proof with δ = {metric}, ε = {epsilon}
 -/
 
-import Core
+import CatPrism
 open CategoryTheory
 
 namespace {namespace}
 
-def {functor_name} : EpsFunctor (δ := {metric}) {epsilon} where
+def {functor_name} : EpsFunctor (d := {metric}) {epsilon} where
   F := {
     obj := fun X => match X with
 {object_map}
@@ -20,5 +20,6 @@ def {functor_name} : EpsFunctor (δ := {metric}) {epsilon} where
 
   comp_ok := by
 {proof_block}
+  id_ok   := by verify_id
 
 end {namespace}

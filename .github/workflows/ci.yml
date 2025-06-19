@@ -1,0 +1,43 @@
+name: CatPrism CI
+
+on:
+  push:
+    paths:
+      - 'examples/**/*.cat'
+      - 'parser/**'
+      - 'core/lean/**'
+      - 'tests/lean/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - 'examples/**/*.cat'
+      - 'parser/**'
+      - 'core/lean/**'
+      - 'tests/lean/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build parser
+        working-directory: parser
+        run: cargo build --release
+      - name: Convert .cat files
+        run: |
+          mkdir -p core/lean/AutoGen
+          for file in examples/*.cat; do
+            ./parser/target/release/catprism export-lean --input "$file" --out core/lean/AutoGen
+          done
+      - name: Setup Lean
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+      - name: Fetch deps
+        working-directory: core/lean
+        run: lake update
+      - name: Build proofs
+        working-directory: core/lean
+        run: lake build

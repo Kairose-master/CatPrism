@@ -7,16 +7,17 @@
   • ShapeDisplay       – ε = 0.20 / 0.50  (PhaseDist / LengthDist)
 -/
 
-import Core
+import CatPrism
 open CategoryTheory
 
 /-! ## Example 1 : Projection1 (auto-generated) ---------------------------- -/
 
 namespace Example1Proof
   open Example1
-  def F_proj : EpsFunctor (δ := PhaseDist) 0.15 where
+  def F_proj : EpsFunctor (d := PhaseDist) 0.15 where
     F       := ProjectionFunctor  -- auto-export-lean
     comp_ok := by verify_comp
+    id_ok   := by verify_id
 end Example1Proof
 
 
@@ -28,9 +29,10 @@ variable {n : ℕ} (n)
 -- (MatObj, PhaseObj, PhaseFunctor 정의는 이전과 동일)
 
 noncomputable def F_mat_phase (n) :
-    EpsFunctor (δ := PhaseDist) 0.30 where
+    EpsFunctor (d := PhaseDist) 0.30 where
   F       := PhaseFunctor n
   comp_ok := by verify_comp             -- δθ triangle ≤ ε
+  id_ok   := by verify_id
 
 end MatrixPhase
 
@@ -40,9 +42,10 @@ end MatrixPhase
 namespace GroupForget
 open GroupCat
 
-def ForgetGroups : EpsFunctor (δ := Δzero) 0 where
+def ForgetGroups : EpsFunctor (d := Δzero) 0 where
   F       := CategoryTheory.forget _
   comp_ok := by verify_comp
+  id_ok   := by verify_id
 end GroupForget
 
 
@@ -51,12 +54,14 @@ end GroupForget
 namespace ShapeDisplay
 -- (Shape/Display 범주, HasPhase·HasLength 인스턴스 가정)
 
-def F_shape_phase : EpsFunctor (δ := PhaseDist) 0.2 where
+def F_shape_phase : EpsFunctor (d := PhaseDist) 0.2 where
   F       := ShapeToDisplayPhase   -- 가정된 functor
   comp_ok := by verify_comp
+  id_ok   := by verify_id
 
-def F_shape_len : EpsFunctor (δ := LengthDist) 0.5 where
+def F_shape_len : EpsFunctor (d := LengthDist) 0.5 where
   F       := ShapeToDisplayLen     -- 가정된 functor
   comp_ok := by verify_comp
+  id_ok   := by verify_id
 end ShapeDisplay
 

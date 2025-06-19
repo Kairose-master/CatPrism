@@ -1,0 +1,10 @@
+category S { object A, morphism r : A -> A }
+category T { object B, morphism s : B -> B }
+metric Δzero { lambda (f,g) => 0 }
+functor RotF from S to T {
+  object_map { A -> B }
+  morphism_map { r -> s }
+  epsilon           : 0
+  distortion_metric : Δzero
+  rule              : preserve_composition_within ε
+}
