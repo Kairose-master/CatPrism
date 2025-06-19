@@ -1,14 +1,3 @@
-/-!
-  Core.lean — CatPrism Lean library (ε‑functoriality core)
-  --------------------------------------------------------
-  * Category / Functor wrappers (aliasing mathlib)
-  * Distortion pseudometrics: `PhaseDist`, `LengthDist`, `Δzero`
-  * Basic `EpsFunctor` structure with composition‑within‑ε property
-  
-  Simplified to eliminate meta‑tactics for first successful build.
-  Tested on Lean v4.21.0‑rc2.
--/
-
 import Mathlib.CategoryTheory.Category.Basic
 import Mathlib.CategoryTheory.Functor.Basic
 import Mathlib.Data.Real.Basic
