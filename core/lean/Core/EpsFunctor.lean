@@ -1,5 +1,6 @@
 import Mathlib.CategoryTheory.Category.Basic
 import Mathlib.CategoryTheory.Functor.Basic
+import Mathlib.Tactic
 import Mathlib.Data.Real.Basic
 
 open CategoryTheory
@@ -19,38 +20,32 @@ when instantiating an `EpsFunctor`.
 -/
 structure EpsFunctor
     {C D : Type u} [Category C] [Category D]
-    (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) : Type (max u 1) where
+    (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
+    (ε : ℝ) : Type (u+1) where
   /-- Object mapping. -/
   objMap : C → D
   /-- Morphism mapping. -/
   map    : {A B : C} → (A ⟶ B) → (objMap A ⟶ objMap B)
   /-- Composition is preserved up to `ε`. -/
   comp_ok :
-    ∀ {A B C'} (f : A ⟶ B) (g : B ⟶ C'),
-      d (map (f ≫ g)) (map f ≫ map g) ≤ ε
+    ∀ {A B C₁ : C} (f : A ⟶ B) (g : B ⟶ C₁),
+      d (map (g ≫ f)) ((map f) ≫ (map g)) ≤ ε
   /-- Identities are preserved up to `ε`. -/
-  id_ok   : ∀ {A}, d (map (𝟙 A)) (𝟙 (objMap A)) ≤ ε
+  id_ok   : ∀ {A : C}, d (map (𝟙 A)) (𝟙 (objMap A)) ≤ ε
 
 attribute [simp] EpsFunctor.objMap EpsFunctor.map
 
-/-- Embed a strict functor as a `0`‑ε functor. -/
-@[simp]
-def EpsFunctor.fromStrict
-    {C D : Type u} [Category C] [Category D]
-    (F : C ⥤ D)
-    (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
+namespace EpsFunctor
+
+variable {C D : Type u} [Category C] [Category D]
+
+/-- Strict functor ⟶ 0-ε functor -/
+@[simp] def fromStrict
+    (F : C ⥤ D) (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
     [∀ {A B} (f : A ⟶ B), Decidable (d f f = 0)] :
-    EpsFunctor (C := C) (D := D) d 0 := by
-  classical
-  exact
-    { objMap := F.obj,
-      map    := F.map,
-      comp_ok := by
-        intro A B C' f g
-        -- `map` is strict, so the distance is zero.
-        change d _ _ ≤ 0
-        simp [F.map_comp, le_of_eq] at *,
-      id_ok := by
-        intro A
-        change d _ _ ≤ 0
-        simp [F.map_id, le_of_eq] }
+    EpsFunctor d 0 := by
+  refine { objMap := F.obj, map := fun f => F.map f, ?_, ?_ }
+  · intro _ _ _ f g; simp [F.map_comp]
+  · intro A; simp [F.map_id]
+
+end EpsFunctor
