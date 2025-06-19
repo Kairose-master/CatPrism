@@ -4,6 +4,7 @@ import Mathlib.Data.Real.Basic
 import Core.RawPrefunctor
 import Core.Tactics
 open CategoryTheory
+open Core.EpsFunctor
 import CatPrism
 
 def IdTest : EpsFunctor (d := fun _ _ _ => (0 : ℝ)) 0 := by
