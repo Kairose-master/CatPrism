@@ -42,11 +42,12 @@ inductive UnitCat
 instance : CatPrismCategory UnitCat where
   Hom := fun _ _ => PUnit
   id := fun _ => PUnit.unit
-  comp := fun _ _ _ _ _ => PUnit.unit
+  comp := @fun _ _ _ _ _ => PUnit.unit
 
 instance : HasPhase (C := UnitCat) where
-  phase := fun {A B} f => 0
-  phase_arg := fun {A B} f => Real.pi_pos.le
+  phase := fun {A B} _ => 0
+  phase_arg := fun {A B} f =>
+    abs_le.2 ⟨by simp [Real.pi_pos.le], by simp [Real.pi_pos.le]⟩
 
 def IdFunctor : EpsFunctor (δ := PhaseDist) 0 where
   F := { obj := id, map := fun _ => PUnit.unit }
