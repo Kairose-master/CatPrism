@@ -11,12 +11,17 @@ universe u
 variable {C D : Type u}
 variable [CatPrismCategory C] [CatPrismCategory D]
 
+instance instQuiverC : Quiver C := inferInstance
+instance instCategoryC : Category C := inferInstance
+instance instQuiverD : Quiver D := inferInstance
+instance instCategoryD : Category D := inferInstance
+
 /-- ε-functor now checks identities. -/
 structure EpsFunctor
     (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
     (ε : ℝ) : Type u where
-  obj_map : C → D
-  map     : {A B : C} → (A ⟶ B) → (obj_map A ⟶ obj_map B)
+  @[simp] obj_map : C → D
+  @[simp] map     : {A B : C} → (A ⟶ B) → (obj_map A ⟶ obj_map B)
   comp_ok :
     ∀ {A B C₁} (f : A ⟶ B) (g : B ⟶ C₁),
       d (map (g ≫ f)) ((map f) ≫ (map g)) ≤ ε
@@ -28,18 +33,15 @@ structure EpsFunctor
 def EpsFunctor.fromStrict
     (F : C ⥤ D)
     (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
-    [h : ∀ {A B} (f : A ⟶ B), Decidable (d f f = 0)] :
+    [∀ {A B} (f : A ⟶ B), Decidable (d f f = 0)] :
     EpsFunctor (C := C) (D := D) d 0 := by
   classical
   refine {
     obj_map := F.obj,
-    map := ?_,
+    map := F.map,
     comp_ok := ?_,
     id_ok := ?_ }
-  · intro A B f; exact F.map f
   · intro A B C₁ f g
-    have := F.map_comp f g
-    simp [this, h]
+    simp [F.map_comp]
   · intro A
-    have := F.map_id A
-    simp [this, h]
+    simp [F.map_id]

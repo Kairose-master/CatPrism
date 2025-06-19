@@ -1,3 +1,9 @@
+import Mathlib.CategoryTheory.Category.Basic
+import Mathlib.CategoryTheory.Functor.Basic
+import Mathlib.Data.Real.Basic
+import Core.RawPrefunctor
+import Core.Tactics
+open CategoryTheory
 import CatPrism
 
 def IdTest : EpsFunctor (d := fun _ _ _ => (0 : ℝ)) 0 := by
