@@ -8,19 +8,20 @@ open CategoryTheory
 
 universe u
 
-/-- A thin wrapper around `Category` so we can add extra structure later. -/
+/-- Wrapper around `Category` (reserved for future CatPrism extensions). -/
 class CatPrismCategory (C : Type u) extends Category C
 
-/-- Morphisms endowed with a phase (angle in ℝ). -/
+/-- Morphisms that carry a phase (angle, measured in `ℝ`). -/
 class HasPhase {C} [CatPrismCategory C] where
   phase     : {A B : C} → (A ⟶ B) → ℝ
   phase_arg : ∀ {A B : C} (f : A ⟶ B), |phase f| ≤ Real.pi
 
+/-- Phase‑based pseudometric. ‖θ₁ − θ₂‖. -/
 def PhaseDist {C} [CatPrismCategory C] [HasPhase (C := C)]
     {A B : C} (f g : A ⟶ B) : ℝ :=
   |HasPhase.phase f - HasPhase.phase g|
 
-/-- Optional length structure (useful for vector-like morphisms). -/
+/-- Optional length structure. -/
 class HasLength {C} [CatPrismCategory C] where
   length     : {A B : C} → (A ⟶ B) → ℝ
   len_nonneg : ∀ {A B : C} (f : A ⟶ B), 0 ≤ length f
@@ -29,20 +30,25 @@ def LengthDist {C} [CatPrismCategory C] [HasLength (C := C)]
     {A B : C} (f g : A ⟶ B) : ℝ :=
   |HasLength.length f - HasLength.length g|
 
-/-- Trivial pseudometric that is constantly 0 (for forgetful functors). -/
+/-- Constant‑zero pseudometric (for forgetful functors). -/
 def Δzero {C} [CatPrismCategory C] {A B : C} (_f g : A ⟶ B) : ℝ := 0
 
-/--  
-An **ε-functor**: a functor that preserves composition _within ε_  
-under a user-supplied pseudometric `δ`.
+/--
+`ε`‑functor: a functor that preserves composition *within* `ε` under a given
+pseudometric.
+
+**NOTE:** The metric parameter was originally named `δ` but renamed to `d` to
+avoid Lean's occasional "invalid argument name" binder clashes. The original
+symbol is kept here as a comment for clarity.
 -/
 structure EpsFunctor
     {C D : Type u} [CatPrismCategory C] [CatPrismCategory D]
-    (δ : {A B : C} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) where
+    (d : {A B : C} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) where
+  -- (originally `δ`)
   F : C ⥤ D
   comp_ok :
     ∀ {A B C₁ : C} (f : A ⟶ B) (g : B ⟶ C₁),
-      δ (F.map (g ≫ f)) ((F.map g) ≫ (F.map f)) ≤ ε
+      d (F.map (g ≫ f)) ((F.map g) ≫ (F.map f)) ≤ ε
 
 /-! ## Minimal working example: `UnitCat` -/
 
@@ -52,15 +58,15 @@ inductive UnitCat
 instance : CatPrismCategory UnitCat where
   Hom  := fun _ _ ↦ PUnit
   id   := fun _ ↦ PUnit.unit
-  comp := fun _ _ _ _ _ ↦ PUnit.unit
+  comp := @fun _ _ _ _ _ ↦ PUnit.unit
 
 instance : HasPhase (C := UnitCat) where
-  phase      := fun {_ _} _ ↦ 0
-  phase_arg  := by
+  phase := fun {_ _} _ ↦ 0
+  phase_arg := by
     intro; simp [Real.pi_pos.le]
 
-/-- Identity functor on `UnitCat`, trivially 0-distortion. -/
-def IdFunctor : EpsFunctor (δ := PhaseDist) 0 where
+/-- Identity functor: distortion‑free (ε = 0). -/
+def IdFunctor : EpsFunctor (d := PhaseDist) 0 where
   F := { obj := id, map := fun _ ↦ PUnit.unit }
   comp_ok := by
     intro A B C₁ f g
