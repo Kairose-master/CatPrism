@@ -4,12 +4,13 @@ import Mathlib.Data.Real.Basic
 import Core.RawPrefunctor
 import Core.Tactics
 open CategoryTheory
+open Core.EpsFunctor
 import CatPrism
 
 /-- EpsFunctor on `UnitCat` using `PhaseDist` as the metric. -/
 def UnitPhaseId : EpsFunctor (d := PhaseDist) 0 := by
   refine {
-    obj_map := fun _ => UnitCat.star,
+    objMap := fun _ => UnitCat.star,
     map := fun {A B} f => PUnit.unit,
     comp_ok := ?_,
     id_ok := ?_ }
