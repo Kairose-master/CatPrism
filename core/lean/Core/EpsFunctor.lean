@@ -2,14 +2,19 @@ import Mathlib.CategoryTheory.Category.Basic
 import Mathlib.CategoryTheory.Functor.Basic
 import Mathlib.Data.Real.Basic
 import Core.RawPrefunctor
+import Core.Tactics
 
 open CategoryTheory
 
 universe u
 
+variable {C D : Type u}
+variable [CatPrismCategory C] [CatPrismCategory D]
+
 /-- ε-functor now checks identities. -/
-structure EpsFunctor {C D : Type u} [CatPrismCategory C] [CatPrismCategory D]
-    (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) where
+structure EpsFunctor
+    (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
+    (ε : ℝ) : Type u where
   obj_map : C → D
   map     : {A B : C} → (A ⟶ B) → (obj_map A ⟶ obj_map B)
   comp_ok :
@@ -20,11 +25,11 @@ structure EpsFunctor {C D : Type u} [CatPrismCategory C] [CatPrismCategory D]
 
 /-- Embed a strict functor as 0-ε ε-functor. -/
 @[simp]
-def EpsFunctor.fromStrict {C D : Type u} [CatPrismCategory C] [CatPrismCategory D]
+def EpsFunctor.fromStrict
     (F : C ⥤ D)
     (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
     [h : ∀ {A B} (f : A ⟶ B), Decidable (d f f = 0)] :
-    EpsFunctor d 0 := by
+    EpsFunctor (C := C) (D := D) d 0 := by
   classical
   refine {
     obj_map := F.obj,
