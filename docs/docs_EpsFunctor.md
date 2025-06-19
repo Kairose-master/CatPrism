@@ -16,6 +16,28 @@ structure EpsFunctor
                   δ (F.map (g ≫ f)) (F.map g ≫ F.map f) ≤ ε
 ```
 
+일반 `Category` 맥락에서 사용하려면 `Quiver` 인스턴스를
+명시적으로 선언할 수 있다:
+
+```lean
+import Mathlib.CategoryTheory.Category.Basic
+
+universe u v
+
+variable {C D : Type u}
+variable [QC : Quiver C] [QD : Quiver D]
+variable [Category C] [Category D]
+
+structure EpsFunctor
+    (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
+    (ε : ℝ) : Type (max u v) where
+  obj_map : C → D
+  map     : {A B : C} → (A ⟶ B) → (obj_map A ⟶ obj_map B)
+  comp_ok : ∀ {A B C₁ : C} (f : A ⟶ B) (g : B ⟶ C₁),
+              d (map (g ≫ f)) ((map f) ≫ (map g)) ≤ ε
+  id_ok   : ∀ {A : C}, d (map (𝟙 A)) (𝟙 (obj_map A)) ≤ ε
+```
+
 - `δ`: 두 사상 간 거리 (PhaseDist, LengthDist 등)
 - `ε`: 합성 왜곡 허용 범위
 - `F`: 표준 범주론 펑터
