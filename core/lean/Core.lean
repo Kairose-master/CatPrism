@@ -28,17 +28,16 @@ def LengthDist {C} [CatPrismCategory C] [HasLength (C := C)]
 
 def Δzero {C} [CatPrismCategory C] {A B : C} (_f g : A ⟶ B) : ℝ := 0
 
-/-- ε-functor that preserves composition within ε under a pseudometric `d`. -/
+/-- ε-functor preserving composition within ε under pseudometric `d`. -/
 structure EpsFunctor
     {C D : Type u} [CatPrismCategory C] [CatPrismCategory D]
     (d : {A B : C} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) where
   F : C ⥤ D
   comp_ok :
     ∀ {A B C₁ : C} (f : A ⟶ B) (g : B ⟶ C₁),
-      d (F.map (CategoryStruct.comp g f))
-        (CategoryStruct.comp (F.map g) (F.map f)) ≤ ε
+      d (F.map (g ≫ f)) ((F.map f) ≫ (F.map g)) ≤ ε
 
-/-! ### Minimal example: `UnitCat` -/
+/-! ### Example category: `UnitCat` -/
 
 inductive UnitCat
 | star
@@ -53,9 +52,8 @@ instance : HasPhase (C := UnitCat) where
   phase_arg := by
     intro; simp [Real.pi_pos.le]
 
-/-- Identity functor, trivially 0-distortion under `PhaseDist`. -/
 def IdFunctor : EpsFunctor (d := PhaseDist) 0 where
   F := { obj := id, map := fun _ ↦ PUnit.unit }
   comp_ok := by
-    intro _ _ _ _ _    -- 모든 변수 무시 → 경고 없음
-    simp [PhaseDist]   -- 0 ≤ 0
+    intro _ _ _ _ _    -- 모든 인자 무시 → 경고 없음
+    simp [PhaseDist]   -- 0 ≤ 0 → `simp`
