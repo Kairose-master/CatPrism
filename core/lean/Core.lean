@@ -30,11 +30,11 @@ def Δzero {C} [CatPrismCategory C] {A B : C} (f g : A ⟶ B) : ℝ := 0
 
 structure EpsFunctor
     {C D : Type u} [CatPrismCategory C] [CatPrismCategory D]
-    (δ : {A B : C} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) where
+    (dist : {A B : C} → (A ⟶ B) → (A ⟶ B) → ℝ) (ε : ℝ) where
   F : C ⥤ D
   comp_ok :
     ∀ {A B C₁ : C} (f : A ⟶ B) (g : B ⟶ C₁),
-      δ (F.map (g ≫ f)) ((F.map g) ≫ (F.map f)) ≤ ε
+      dist (F.map (g ≫ f)) ((F.map g) ≫ (F.map f)) ≤ ε
 
 inductive UnitCat
 | star
@@ -46,10 +46,10 @@ instance : CatPrismCategory UnitCat where
 
 instance : HasPhase (C := UnitCat) where
   phase := fun {A B} _ => 0
-  phase_arg := fun {A B} f =>
+  phase_arg := fun {A B} _ =>
     abs_le.2 ⟨by simp [Real.pi_pos.le], by simp [Real.pi_pos.le]⟩
 
-def IdFunctor : EpsFunctor (δ := PhaseDist) 0 where
+def IdFunctor : EpsFunctor (dist := PhaseDist) 0 where
   F := { obj := id, map := fun _ => PUnit.unit }
   comp_ok := by
     intros; simp [PhaseDist]
