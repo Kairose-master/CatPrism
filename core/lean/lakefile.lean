@@ -3,7 +3,7 @@ open Lake DSL
 
 package CatPrism
 
-require lean from git "https://github.com/leanprover/lean4.git" @ "v4.21.0-rc2"
+require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.21.0-rc2"
 
 @[default_target]
 lean_lib Core
