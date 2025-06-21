@@ -1,3 +1,11 @@
+import Mathlib.CategoryTheory.Category.Basic
+import Mathlib.CategoryTheory.Functor.Basic
+import Mathlib.Data.Real.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import Mathlib.Tactic
+import Core.RawPrefunctor
+import Core.EpsFunctor
+import Core.Tactics
 /-!
 # CatPrism Core Library
 
@@ -11,18 +19,6 @@ It establishes ththroughout the system, from the DSL parser to the Lean proof en
 - `Δzero`: A trivial metric for exact functoriality checks.
 - `UnitCat`: A minimal example category for testing and demonstration.
 -/
-
-import Mathlib.CategoryTheory.Category.Basic
-import Mathlib.CategoryTheory.Functor.Basic
-import Mathlib.Data.Real.Basic
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Tactic
-
--- It is assumed these files are in the `Core` directory, sibling to this file.
-import Core.RawPrefunctor
-import Core.EpsFunctor
-import Core.Tactics
-
 open CategoryTheory
 
 universe u
