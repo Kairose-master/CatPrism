@@ -1,13 +1,12 @@
-/-
-Copyright (c) 2025 CatPrism. Released under MIT license.
-Author: 진우
--/
 import Mathlib.CategoryTheory.Category.Basic
 import Mathlib.CategoryTheory.Functor.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Tactic           -- `simp`, `aesop`, `have`, …
-
+/-
+Copyright (c) 2025 CatPrism. Released under MIT license.
+Author: 진우
+-/
 /-!
 # CatPrism ‑ Core Library
 
