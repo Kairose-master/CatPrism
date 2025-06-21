@@ -7,7 +7,6 @@ import Mathlib.Tactic
 open CategoryTheory
 universe u v
 
-class CatPrismCategory (C : Type u) extends Category.{u, v} C
 class CatPrismCategory (C : Type u) extends Quiver.{v} C, Category.{v} C
 namespace CatPrism.Core
 
