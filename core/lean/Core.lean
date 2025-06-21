@@ -1,103 +1,104 @@
+/-
+Copyright (c) 2025 CatPrism. Released under MIT license.
+Author: 진우
+-/
 import Mathlib.CategoryTheory.Category.Basic
 import Mathlib.CategoryTheory.Functor.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Tactic
-import Core.RawPrefunctor
-import Core.EpsFunctor
-import Core.Tactics
+import Mathlib.Tactic           -- `simp`, `aesop`, `have`, …
+
 /-!
-# CatPrism Core Library
+# CatPrism ‑ Core Library
 
-This file defines the foundational typeclasses and structures for the CatPrism project.
-It establishes ththroughout the system, from the DSL parser to the Lean proof engine.
+`CatPrism.Core` 모듈은 프로젝트 전반에서 재사용되는 **기본 카테고리·메트릭·속성 타입클래스**를 정의한다.
 
-## Main Components:
-- `CatPrismCategory`: A simple extension of `Mathlib`'s `Category` for namespacing.
-- `HasPhase`, `HasLength`: Typeclasses to equip morphisms with quantitative attributes.
-- `PhaseDist`, `LengthDist`: Distortion metrics derived from the attributes above.
-- `Δzero`: A trivial metric for exact functoriality checks.
-- `UnitCat`: A minimal example category for testing and demonstration.
+* `CatPrismCategory` : `Category`를 래핑하여 CatPrism 전용 네임스페이스를 부여.
+* `HasPhase`, `HasLength` : 사상을 실수값 **위상(phase)** 또는 **길이(length)** 로 주석 달기.
+* `PhaseDist`, `LengthDist`, `Δzero` : 사상 간 변형(왜곡) 거리.
+* `UnitCat` : 단일 객체·단일 사상의 최소 예제 카테고리.
+
+> **참고:**  
+> 본 파일은 다른 Core 하위 모듈(`RawPrefunctor`, `EpsFunctor`, `Tactics`)의 **기초**가 되므로  
+> **반드시** 이들을 *import* 하지 말아야 순환 의존을 피할 수 있다.
 -/
-open CategoryTheory
 
+open CategoryTheory
 universe u
 
 namespace CatPrism.Core
 
-/--
-A typeclass for categories relevant to the CatPrism project.
-This serves as a wrapper around `Mathlib.CategoryTheory.Category` to allow for
-project-specific instance management and organization.
--/
+/-- CatPrism 전용 카테고리 래퍼. 추가 메타데이터를 붙이기 위한 thin‑wrapper 이다. -/
 class CatPrismCategory (C : Type u) extends Category C
 
-/--
-A typeclass for morphisms that have a notion of "phase".
-The phase is represented as a real number, typically bounded within `[-π, π]`,
-analogous to the argument of a complex number.
--/
-class HasPhase {C} [CatPrismCategory C] where
-  /-- The phase of a morphism, as a real number. -/
+/-! ## 사상에 부여되는 정량 속성 -/
+
+/-- **위상(phase)** 가 주어지는 사상. 값은 `[-π, π]` 구간으로 제한한다. -/
+class HasPhase {C : Type u} [CatPrismCategory C] : Type (u+1) where
   phase     : {A B : C} → (A ⟶ B) → ℝ
-  /-- The phase value is bounded by `±π`. -/
-  phase_arg : ∀ {A B : C} (f : A ⟶ B), |phase f| ≤ Real.pi
+  phase_arg : ∀ {A B : C} (f : A ⟶ B), ‖phase f‖ ≤ Real.pi
 
-/--
-A distortion metric that measures the absolute difference between the phases of two morphisms.
-This is a key metric for analyzing rotational or cyclical transformations.
--/
-def PhaseDist {C} [CatPrismCategory C] [HasPhase (C := C)]
+/-- 두 사상의 위상 차이를 절댓값으로 잰 거리. -/
+@[inline]
+def PhaseDist {C : Type u} [CatPrismCategory C] [HasPhase (C := C)]
     {A B : C} (f g : A ⟶ B) : ℝ :=
-  |HasPhase.phase f - HasPhase.phase g|
+  ‖HasPhase.phase f - HasPhase.phase g‖
 
-/--
-A typeclass for morphisms that have a notion of "length" or "magnitude".
-The length is a non-negative real number.
--/
-class HasLength {C} [CatPrismCategory C] where
-  /-- The length of a morphism. -/
+/-- **길이(length)** 가 주어지는 사상. 값은 항상 0 이상. -/
+class HasLength {C : Type u} [CatPrismCategory C] : Type (u+1) where
   length     : {A B : C} → (A ⟶ B) → ℝ
-  /-- The length must be non-negative. -/
   len_nonneg : ∀ {A B : C} (f : A ⟶ B), 0 ≤ length f
 
-/--
-A distortion metric that measures the absolute difference between the lengths of two morphisms.
-This is useful for analyzing transformations involving scaling or magnitude changes.
--/
-def LengthDist {C} [CatPrismCategory C] [HasLength (C := C)]
+/-- 두 사상의 길이 차이를 절댓값으로 잰 거리. -/
+@[inline]
+def LengthDist {C : Type u} [CatPrismCategory C] [HasLength (C := C)]
     {A B : C} (f g : A ⟶ B) : ℝ :=
-  |HasLength.length f - HasLength.length g|
+  ‖HasLength.length f - HasLength.length g‖
+
+/-- 항상 0을 반환하는 **엄밀(ε = 0) 펑터 검사용** 거리. -/
+@[inline] def Δzero {C : Type u} [CatPrismCategory C] {A B : C}
+    (_f g : A ⟶ B) : ℝ := 0
+
+/-! ## 최소 예제 카테고리 `UnitCat` -/
 
 /--
-A trivial "zero" metric that always returns 0.
-This is used to model strict, non-approximate functors within the `EpsFunctor` framework
-by setting `ε = 0`.
+`UnitCat`은 단 하나의 객체(`star`)와 단 하나의 사상(`𝟙`)만 갖는
+전형적인 **단위(category with one object)** 이다.
 -/
-def Δzero {C} [CatPrismCategory C] {A B : C} (_f g : A ⟶ B) : ℝ := 0
-
-
-/-! ### Example category: `UnitCat` -/
-
-/--
-A minimal category with a single object (`star`) and a single morphism (the identity).
-Useful for testing fundamental structures without combinatorial complexity.
--/
-inductive UnitCat
+inductive UnitCat : Type
 | star
-deriving Inhabited -- Allows creating a default instance of `UnitCat`.
+deriving DecidableEq, Inhabited
 
+open UnitCat
+
+/-- `UnitCat`에 대한 카테고리(및 CatPrismCategory) 인스턴스. -/
 instance : CatPrismCategory UnitCat where
-  Hom  := fun _ _ ↦ PUnit
-  id   := fun _   ↦ PUnit.unit
-  comp := fun _ _ ↦ PUnit.unit
+  Hom      := fun _ _ => PUnit           -- 모든 Hom-set은 단일 원소
+  id       := fun _ => PUnit.unit
+  comp     := fun _ _ _ _ _ => PUnit.unit
+  id_comp  := by intros _ _ f; cases f; rfl
+  comp_id  := by intros _ _ f; cases f; rfl
+  assoc    := by intros _ _ _ _ f g h; cases f; cases g; cases h; rfl
 
+/-- `UnitCat` 모든 사상의 위상은 0. -/
 instance : HasPhase (C := UnitCat) where
-  phase     := fun _ _ ↦ 0
-  phase_arg := by
-    -- The proof is trivial since phase is always 0.
+  phase := by
     intro _ _ _
-    simp [Real.pi_pos.le]
+    exact 0
+  phase_arg := by
+    intro _ _ _
+    have : (0 : ℝ) = 0 := rfl
+    have h : ‖(0 : ℝ)‖ ≤ Real.pi := by
+      simp [Real.pi_pos.le]
+    simpa using h
 
-end CatPrism.Coree basic vocabulary for categories, morphisms, and distortion metrics
-that are used 
+/-- `UnitCat` 모든 사상의 길이도 0. -/
+instance : HasLength (C := UnitCat) where
+  length := by
+    intro _ _ _
+    exact 0
+  len_nonneg := by
+    intro _ _ _
+    simp
+
+end CatPrism.Core
