@@ -51,7 +51,7 @@
 
 ```bash
 # JSON 변환
-catprism parse --json examples/Example2.cat
+catprism parse --input examples/Example2.cat --output examples/Example2.cat.ast.json
 
 # Lean 변환
 catprism export-lean --input examples/Example2.cat

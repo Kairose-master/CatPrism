@@ -7,7 +7,7 @@
 ## 🌈 Highlights
 
 - **Core DSL** — `.cat` grammar for categories, functors, custom metrics (`Δθ | Δlen | Δzero`) and ε‑composition rule.
-- **Rust Parser + CLI** — `catprism` binary: `parse --json`, `export-lean`, full AST (JSON) output.
+- **Rust Parser + CLI** — `catprism` binary: `parse --input foo.cat --output foo.cat.ast.json`, `export-lean`, full AST (JSON) output.
 - **Lean Proof Engine** — `verify_comp` tactic, `derive_phase` meta‑tactic, `PhaseDist` & `LengthDist` metrics, `HasLength` framework.
 - **Web Renderer** — Mermaid graph + WebGL beams with ε‑hue encoding; drop‑in `renderCatPrism` ESM module.
 - **CI Pipeline** — GitHub Actions: Rust build/tests → `.cat` → `.lean` export → Lean proofs + fmt checks.
@@ -39,7 +39,7 @@ examples/Projection1.cat / .ast.json + Example2~4.cat
 Run:
 
 ```bash
-catprism parse --json examples/Projection1.cat
+catprism parse --input examples/Projection1.cat --output examples/Projection1.cat.ast.json
 catprism export-lean --input examples/Projection1.cat
 lake build          # inside core/lean
 ```

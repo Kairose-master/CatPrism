@@ -60,7 +60,7 @@ $ cargo build --release
 
 ```bash
 # JSON AST for renderer
-$ ./target/release/catprism parse --json ../examples/Projection1.cat
+$ ./target/release/catprism parse --input ../examples/Projection1.cat --output ../examples/Projection1.cat.ast.json
 
 # Lean proof export
 $ ./target/release/catprism export-lean --input ../examples/Projection1.cat

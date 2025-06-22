@@ -25,7 +25,7 @@ cargo build --release
 
 ### 2. `.cat` → JSON AST
 ```bash
-./target/release/catprism parse --json examples/Projection1.cat
+./target/release/catprism parse --input examples/Projection1.cat --output examples/Projection1.cat.ast.json
 ```
 
 ### 3. `.cat` → Lean 변환
