@@ -37,8 +37,8 @@ cargo build --release
 ## 3 · `.cat` → JSON (AST for Web)
 
 ```bash
-./target/release/catprism parse --json ../examples/Projection1.cat
-# → examples/Projection1.ast.json
+./target/release/catprism parse --input ../examples/Projection1.cat --output ../examples/Projection1.cat.ast.json
+# → examples/Projection1.cat.ast.json
 ```
 
 ---
@@ -89,7 +89,7 @@ python -m http.server 9000
 
 ```bash
 # 1. place MyFunctor.cat under examples/
-catprism parse --json examples/MyFunctor.cat
+catprism parse --input examples/MyFunctor.cat --output examples/MyFunctor.cat.ast.json
 catprism export-lean --input examples/MyFunctor.cat
 cd core/lean && lake build
 ```
@@ -100,7 +100,7 @@ cd core/lean && lake build
 
 | 목적             | 명령                                           |
 | -------------- | -------------------------------------------- |
-| JSON AST       | `catprism parse --json foo.cat`              |
+| JSON AST       | `catprism parse --input foo.cat --output foo.cat.ast.json` |
 | Lean export    | `catprism export-lean --input foo.cat`       |
 | Build proofs   | `lake build` (in `core/lean`)                |
 | Local web demo | `python -m http.server 9000` (in `renderer`) |
