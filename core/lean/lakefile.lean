@@ -8,4 +8,7 @@ require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v
 @[default_target]
 lean_lib Core
 
+@[default_target]
+lean_lib CatPrism
+
 lean_lib CatPrism_examples

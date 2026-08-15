@@ -8,11 +8,9 @@ open CategoryTheory
 universe u v
 
 class CatPrismCategory (C : Type u) extends Category.{v} C
-instance [CatPrismCategory C] : Quiver C := ⟨CategoryStruct.Hom⟩
 namespace CatPrism.Core
 
-@[class] structure HasPhase (C : Type u) [CatPrismCategory C] :
-    Type (max u (v+1)) where
+@[class] structure HasPhase (C : Type u) [CatPrismCategory C] where
   phase     : {A B : C} → (A ⟶ B) → ℝ
   phase_arg : {A B : C} → (f : A ⟶ B) → ‖phase f‖ ≤ Real.pi
 
@@ -21,8 +19,7 @@ namespace CatPrism.Core
     {A B : C} (f g : A ⟶ B) : ℝ :=
   ‖h.phase f - h.phase g‖
 
-@[class] structure HasLength (C : Type u) [CatPrismCategory C] :
-    Type (max u (v+1)) where
+@[class] structure HasLength (C : Type u) [CatPrismCategory C] where
   length     : {A B : C} → (A ⟶ B) → ℝ
   len_nonneg : {A B : C} → (f : A ⟶ B) → 0 ≤ length f
 
@@ -44,7 +41,7 @@ open UnitCat
 instance : CatPrismCategory UnitCat where
   Hom      := fun _ _ => PUnit
   id       := fun _ => PUnit.unit
-  comp     := fun _ _ _ _ _ => PUnit.unit
+  comp     := fun _ _ => PUnit.unit
   id_comp  := by intro _ _ f; cases f; rfl
   comp_id  := by intro _ _ f; cases f; rfl
   assoc    := by intro _ _ _ _ f g h; cases f; cases g; cases h; rfl
