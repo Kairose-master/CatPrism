@@ -1,0 +1,15 @@
+# Rust
+/parser/target/
+**/target/
+
+# Lean / Lake
+/core/lean/.lake/
+**/.lake/
+/core/lean/AutoGen/
+
+# Node (renderer)
+node_modules/
+
+# OS / editor
+.DS_Store
+*.swp
