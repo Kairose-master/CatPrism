@@ -42,18 +42,13 @@ elab "verify_id" : tactic => do
 -/
 elab "verify_comp" : tactic => do
   evalTactic (← `(tactic|
-    -- 1️⃣ 기본 범주 동등식 정리
-    try
-      simp only [Category.assoc, Category.id_comp, Category.comp_id] at * <;> simp at *
-
-    -- 2️⃣ 메트릭 정의가 `simp`로 펼쳐질 수 있도록 재시도
-    try simp at *
-
-    -- 3️⃣ 수치 목표라면 `norm_num` → 남으면 `linarith`
-    first
+    -- 1️⃣ 기본 범주 동등식 정리, 2️⃣ 메트릭 정의 전개, 3️⃣ 수치/선형 목표 해결
+    (try simp only [Category.assoc, Category.id_comp, Category.comp_id] at * <;> simp at *) ;
+    (try simp at *) ;
+    (first
       | norm_num
       | linarith
-      | apply le_of_eq; simp            -- 예: Δzero(…) = 0 경우
+      | apply le_of_eq; simp)            -- 예: Δzero(…) = 0 경우
   ))
 
 end CatPrism.Tactics

@@ -17,14 +17,13 @@ composition to be preserved up to a tolerance `ε` with respect to a user-suppli
 structure EpsFunctor
     {C D : Type u} [Category C] [Category D]
     (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
-    (ε : ℝ) : Type (u+1) where
+    (ε : ℝ) where
   /-- ✍️ The underlying mapping of objects and morphisms (the data). -/
   F : RawPrefunctor C D
   /-- Composition is preserved up to `ε`. -/
   comp_ok :
     ∀ {A B C₁ : C} (f : A ⟶ B) (g : B ⟶ C₁),
-      -- ✍️ 중요: 펑터의 올바른 합성 순서로 수정되었습니다.
-      d (F.map (g ≫ f)) (F.map g ≫ F.map f) ≤ ε
+      d (F.map (f ≫ g)) (F.map f ≫ F.map g) ≤ ε
   /-- Identities are preserved up to `ε`. -/
   id_ok   : ∀ {A : C}, d (F.map (𝟙 A)) (𝟙 (F.obj A)) ≤ ε
 
@@ -35,16 +34,18 @@ namespace EpsFunctor
 
 variable {C D : Type u} [Category C] [Category D]
 
-/-- Strict functor ⟶ 0-ε functor -/
+/-- Strict functor ⟶ 0-ε functor, given the distortion metric `d` is reflexive. -/
 @[simp] def fromStrict
     (F_strict : C ⥤ D) (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
-    [∀ {A B} (f : A ⟶ B), Decidable (d f f = 0)] :
-    EpsFunctor d 0 := by
-  -- ✍️ 먼저 RawPrefunctor 데이터를 생성합니다.
+    (hd : ∀ {A B} (f : A ⟶ B), d f f = 0) :
+    @EpsFunctor C D _ _ d 0 := by
   let F_raw : RawPrefunctor C D := { obj := F_strict.obj, map := F_strict.map }
-  -- ✍️ 새로운 구조에 맞게 EpsFunctor를 생성합니다.
   refine { F := F_raw, comp_ok := ?_, id_ok := ?_ }
-  · intro A B C₁ f g; simp [F_strict.map_comp] -- 이제 simp가 완벽하게 작동합니다.
-  · intro A; simp [F_D.map_id]
+  · intro A B C₁ f g
+    show d (F_strict.map (f ≫ g)) (F_strict.map f ≫ F_strict.map g) ≤ 0
+    rw [F_strict.map_comp]; simp [hd]
+  · intro A
+    show d (F_strict.map (𝟙 A)) (𝟙 (F_strict.obj A)) ≤ 0
+    rw [F_strict.map_id]; simp [hd]
 
 end EpsFunctor
