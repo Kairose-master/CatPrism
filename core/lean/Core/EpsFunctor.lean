@@ -21,7 +21,7 @@ when instantiating an `EpsFunctor`.
 structure EpsFunctor
     {C D : Type u} [Category C] [Category D]
     (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
-    (ε : ℝ) : Type (u+1) where
+    (ε : ℝ) where
   /-- Object mapping. -/
   objMap : C → D
   /-- Morphism mapping. -/
@@ -29,7 +29,7 @@ structure EpsFunctor
   /-- Composition is preserved up to `ε`. -/
   comp_ok :
     ∀ {A B C₁ : C} (f : A ⟶ B) (g : B ⟶ C₁),
-      d (map (g ≫ f)) ((map f) ≫ (map g)) ≤ ε
+      d (map (f ≫ g)) ((map f) ≫ (map g)) ≤ ε
   /-- Identities are preserved up to `ε`. -/
   id_ok   : ∀ {A : C}, d (map (𝟙 A)) (𝟙 (objMap A)) ≤ ε
 
@@ -39,13 +39,14 @@ namespace EpsFunctor
 
 variable {C D : Type u} [Category C] [Category D]
 
-/-- Strict functor ⟶ 0-ε functor -/
+/-- Strict functor ⟶ 0-ε functor, given the distortion metric `d` is reflexive. -/
 @[simp] def fromStrict
     (F : C ⥤ D) (d : {A B : D} → (A ⟶ B) → (A ⟶ B) → ℝ)
-    [∀ {A B} (f : A ⟶ B), Decidable (d f f = 0)] :
-    EpsFunctor d 0 := by
-  refine { objMap := F.obj, map := fun f => F.map f, ?_, ?_ }
-  · intro _ _ _ f g; simp [F.map_comp]
-  · intro A; simp [F.map_id]
+    (hd : ∀ {A B} (f : A ⟶ B), d f f = 0) :
+    @EpsFunctor C D _ _ d 0 where
+  objMap := F.obj
+  map := fun f => F.map f
+  comp_ok := by intro _ _ _ f g; rw [F.map_comp]; simp [hd]
+  id_ok := by intro A; rw [F.map_id]; simp [hd]
 
 end EpsFunctor
