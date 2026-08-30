@@ -8,7 +8,7 @@ import Core.EpsFunctor
 import Core.Tactics
 
 open CategoryTheory
-open Core.EpsFunctor
+open EpsFunctor
 
 universe u
 
